@@ -25,6 +25,8 @@ const fileInput = document.getElementById('fileInput');
 const micBtn = document.getElementById('micBtn');
 const speakBtn = document.getElementById('speakBtn');
 const voiceStatus = document.getElementById('voiceStatus');
+const roseGift = document.getElementById('roseGift');
+const openGiftBtn = document.getElementById('openGiftBtn');
 const audioRecorder = document.getElementById('audioRecorder');
 const audioTimer = document.getElementById('audioTimer');
 const audioPreview = document.getElementById('audioPreview');
@@ -38,6 +40,11 @@ let audioChunks = [];
 let recordStartedAt = 0;
 let recordedSeconds = 0;
 let timerId = null;
+
+openGiftBtn.addEventListener('click', () => {
+  roseGift.classList.add('hidden');
+  msgInput.focus();
+});
 
 const languageNames = { 'pt-BR': 'português', en: 'inglês', fr: 'francês', es: 'espanhol', no: 'norueguês' };
 

@@ -436,9 +436,78 @@
     display: none;
     border-bottom: 1px solid rgba(122, 92, 0, 0.15);
   }
+
+  #roseGift {
+    position: fixed;
+    inset: 0;
+    z-index: 20;
+    display: grid;
+    place-items: center;
+    padding: 24px;
+    background: rgba(255, 248, 251, 0.96);
+    transition: opacity 0.45s ease, visibility 0.45s ease;
+  }
+
+  #roseGift.hidden { opacity: 0; visibility: hidden; pointer-events: none; }
+
+  .rose-gift-card {
+    width: min(92vw, 390px);
+    text-align: center;
+    animation: giftAppear 0.8s ease both;
+  }
+
+  .rose-gift-card img {
+    display: block;
+    width: min(72vw, 270px);
+    height: min(72vw, 270px);
+    margin: 0 auto 22px;
+    object-fit: cover;
+    border-radius: 50%;
+    box-shadow: 0 22px 45px rgba(143, 29, 77, 0.2);
+  }
+
+  .rose-gift-card h2 {
+    margin: 0 0 10px;
+    color: var(--rosa-escuro);
+    font-size: clamp(26px, 7vw, 36px);
+    line-height: 1.15;
+  }
+
+  .rose-gift-card p {
+    margin: 0 auto 22px;
+    max-width: 320px;
+    color: var(--cinza);
+    font-size: 16px;
+    line-height: 1.6;
+  }
+
+  #openGiftBtn {
+    border: 0;
+    border-radius: 999px;
+    padding: 13px 25px;
+    background: linear-gradient(135deg, var(--rosa), var(--rosa-escuro));
+    color: white;
+    font: inherit;
+    font-weight: 700;
+    cursor: pointer;
+    box-shadow: 0 12px 25px rgba(215, 38, 106, 0.25);
+  }
+
+  @keyframes giftAppear {
+    from { opacity: 0; transform: translateY(14px) scale(0.97); }
+    to { opacity: 1; transform: translateY(0) scale(1); }
+  }
 </style>
 </head>
 <body>
+<section id="roseGift" aria-label="Um presente">
+  <div class="rose-gift-card">
+    <img src="https://images.unsplash.com/photo-1496062031456-07b8f162a322?auto=format&fit=crop&w=700&q=88" alt="Uma rosa vermelha" />
+    <h2>Um presente para você</h2>
+    <p>Uma rosa para lembrar que algumas pessoas tornam o dia mais bonito só por existirem.</p>
+    <button id="openGiftBtn" type="button">Abrir meu presente</button>
+  </div>
+</section>
 <div id="app">
   <header>
     <button id="menuBtn" aria-label="Menu">☰</button>
