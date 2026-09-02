@@ -70,7 +70,7 @@ async function callGemini(prompt, history = []) {
       ...history.map((m) => ({ role: m.role === 'assistant' ? 'model' : 'user', parts: [{ text: m.content }] })),
       { role: 'user', parts: [{ text: prompt }] }
     ],
-    generationConfig: { temperature: 0.7 }
+    generationConfig: { temperature: 0.6, maxOutputTokens: 160 }
   };
 
   const models = [
@@ -82,7 +82,7 @@ async function callGemini(prompt, history = []) {
   for (const model of models) {
     for (let attempt = 0; attempt < 2; attempt += 1) {
       const controller = new AbortController();
-      const timeoutId = setTimeout(() => controller.abort(), 15000);
+      const timeoutId = setTimeout(() => controller.abort(), 8000);
       let res;
       try {
         res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent`, {
