@@ -25,7 +25,19 @@ const fileInput = document.getElementById('fileInput');
 const micBtn = document.getElementById('micBtn');
 const speakBtn = document.getElementById('speakBtn');
 const voiceStatus = document.getElementById('voiceStatus');
+const audioRecorder = document.getElementById('audioRecorder');
+const audioTimer = document.getElementById('audioTimer');
+const audioPreview = document.getElementById('audioPreview');
+const recordStartBtn = document.getElementById('recordStartBtn');
+const recordPauseBtn = document.getElementById('recordPauseBtn');
+const recordStopBtn = document.getElementById('recordStopBtn');
+const copyDurationBtn = document.getElementById('copyDurationBtn');
 let lastAssistantText = '';
+let mediaRecorder = null;
+let audioChunks = [];
+let recordStartedAt = 0;
+let recordedSeconds = 0;
+let timerId = null;
 
 const languageNames = { 'pt-BR': 'português', en: 'inglês', fr: 'francês', es: 'espanhol', no: 'norueguês' };
 
@@ -220,17 +232,75 @@ function speak(text) {
 
 speakBtn.addEventListener('click', () => speak(lastAssistantText));
 
+function formatDuration(totalSeconds) {
+  const hours = Math.floor(totalSeconds / 3600);
+  const minutes = Math.floor((totalSeconds % 3600) / 60);
+  const seconds = totalSeconds % 60;
+  return [hours, minutes, seconds].map(value => String(value).padStart(2, '0')).join(':');
+}
+
+function updateTimer() {
+  recordedSeconds = Math.floor((Date.now() - recordStartedAt) / 1000);
+  audioTimer.textContent = formatDuration(recordedSeconds);
+}
+
+async function startAudioRecording() {
+  if (!navigator.mediaDevices?.getUserMedia || !window.MediaRecorder) {
+    voiceStatus.textContent = 'Gravação não disponível neste navegador.';
+    voiceStatus.classList.add('active');
+    return;
+  }
+  const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+  audioChunks = [];
+  mediaRecorder = new MediaRecorder(stream);
+  mediaRecorder.addEventListener('dataavailable', event => audioChunks.push(event.data));
+  mediaRecorder.addEventListener('stop', () => {
+    const audioBlob = new Blob(audioChunks, { type: mediaRecorder.mimeType || 'audio/webm' });
+    audioPreview.src = URL.createObjectURL(audioBlob);
+    stream.getTracks().forEach(track => track.stop());
+  });
+  mediaRecorder.start();
+  recordStartedAt = Date.now() - recordedSeconds * 1000;
+  timerId = setInterval(updateTimer, 250);
+}
+
+micBtn.addEventListener('click', () => {
+  audioRecorder.classList.toggle('open');
+  voiceStatus.classList.remove('active');
+});
+recordStartBtn.addEventListener('click', async () => {
+  try {
+    if (!mediaRecorder || mediaRecorder.state === 'inactive') await startAudioRecording();
+    else if (mediaRecorder.state === 'paused') mediaRecorder.resume();
+  } catch (error) {
+    voiceStatus.textContent = 'Permissão do microfone necessária para gravar.';
+    voiceStatus.classList.add('active');
+  }
+});
+recordPauseBtn.addEventListener('click', () => {
+  if (mediaRecorder?.state === 'recording') {
+    updateTimer();
+    mediaRecorder.pause();
+    clearInterval(timerId);
+  }
+});
+recordStopBtn.addEventListener('click', () => {
+  if (!mediaRecorder || mediaRecorder.state === 'inactive') return;
+  updateTimer();
+  clearInterval(timerId);
+  mediaRecorder.stop();
+});
+copyDurationBtn.addEventListener('click', async () => {
+  await navigator.clipboard?.writeText(audioTimer.textContent);
+  copyDurationBtn.textContent = 'Copiado';
+  setTimeout(() => { copyDurationBtn.textContent = 'Copiar tempo'; }, 1500);
+});
+
 const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
 if (SpeechRecognition) {
   const recognition = new SpeechRecognition();
   recognition.interimResults = false;
   recognition.continuous = false;
-  micBtn.addEventListener('click', () => {
-    recognition.lang = languageSelect.value;
-    voiceStatus.textContent = 'Ouvindo...';
-    voiceStatus.classList.add('active');
-    recognition.start();
-  });
   recognition.addEventListener('result', (event) => {
     msgInput.value = `${msgInput.value}${msgInput.value ? ' ' : ''}${event.results[0][0].transcript}`;
     msgInput.dispatchEvent(new Event('input'));
@@ -238,12 +308,6 @@ if (SpeechRecognition) {
   });
   recognition.addEventListener('end', () => voiceStatus.classList.remove('active'));
   recognition.addEventListener('error', () => voiceStatus.classList.remove('active'));
-} else {
-  micBtn.addEventListener('click', () => {
-    voiceStatus.textContent = 'Microfone não disponível neste navegador.';
-    voiceStatus.classList.add('active');
-    setTimeout(() => voiceStatus.classList.remove('active'), 2500);
-  });
 }
 
 async function sendMessage() {
