@@ -7,7 +7,6 @@ const app = express();
 const PORT = Number(process.env.PORT || 10000);
 const DATA_FILE = path.join(__dirname, 'db.json');
 const AI_PROVIDER = (process.env.AI_PROVIDER || 'gemini').toLowerCase();
-const DEFAULT_PROJECTS = ['MEDICINA', 'PESSOAL', 'DIREITO DA MINHA FILHA', 'AULAS', 'PORTUGUÊS', 'INGLÊS', 'ESPANHOL', 'NORUEGUÊS', 'FRANCÊS'];
 
 function ensureDataFile() {
   if (!fs.existsSync(DATA_FILE)) {
@@ -17,25 +16,7 @@ function ensureDataFile() {
 
 function readData() {
   ensureDataFile();
-  const data = JSON.parse(fs.readFileSync(DATA_FILE, 'utf8'));
-  const existingNames = new Set((data.projects || []).map((project) => project.name.toUpperCase()));
-  let changed = false;
-
-  DEFAULT_PROJECTS.forEach((name) => {
-    if (existingNames.has(name)) return;
-    const project = { id: makeId('project'), name, createdAt: new Date().toISOString() };
-    data.projects.push(project);
-    data.conversations.push({
-      id: makeId('conversation'),
-      projectId: project.id,
-      title: 'Conversa 1',
-      createdAt: new Date().toISOString()
-    });
-    changed = true;
-  });
-
-  if (changed) writeData(data);
-  return data;
+  return JSON.parse(fs.readFileSync(DATA_FILE, 'utf8'));
 }
 
 function writeData(data) {
@@ -225,10 +206,9 @@ async function callGroq(prompt, history = []) {
   return data?.choices?.[0]?.message?.content || 'Sem resposta da IA.';
 }
 
-async function generateAssistantReply({ projectName, message, conversationId }) {
+async function generateAssistantReply({ projectName, message, conversationId, language }) {
   const history = buildHistoryMessages(conversationId).slice(-8);
-  const language = getConversationLanguage(projectName);
-  const prompt = `Você é um assistente para o projeto "${projectName || 'Projeto'}". Responda sempre em ${language}, mesmo que a pergunta esteja em outra língua. Seja acolhedor, útil e objetivo. Pergunta do usuário: ${message}`;
+  const prompt = `Você é um assistente para o projeto "${projectName || 'Projeto'}". Responda de forma útil e objetiva no idioma ${language || 'português'}. Pergunta do usuário: ${message}`;
 
   try {
     switch (AI_PROVIDER) {
@@ -247,15 +227,6 @@ async function generateAssistantReply({ projectName, message, conversationId }) 
   } catch (error) {
     return `Erro ao chamar a IA: ${error.message}`;
   }
-}
-
-function getConversationLanguage(projectName) {
-  const normalizedName = String(projectName || '').toUpperCase();
-  if (normalizedName.includes('INGL') || normalizedName === 'IN') return 'inglês';
-  if (normalizedName.includes('ESPAN') || normalizedName === 'ES') return 'espanhol';
-  if (normalizedName.includes('NORUEG') || normalizedName === 'NO') return 'norueguês';
-  if (normalizedName.includes('FRANC') || normalizedName === 'FR') return 'francês';
-  return 'português';
 }
 
 app.use(cors());
@@ -334,7 +305,7 @@ app.get('/api/conversations/:conversationId/messages', (req, res) => {
 });
 
 app.post('/api/chat', async (req, res) => {
-  const { conversationId, projectName, message } = req.body || {};
+  const { conversationId, projectName, message, language } = req.body || {};
 
   if (!conversationId || !message || !String(message).trim()) {
     return res.status(400).json({ message: 'Mensagem e conversa são obrigatórias.' });
@@ -355,7 +326,8 @@ app.post('/api/chat', async (req, res) => {
   const assistantReply = await generateAssistantReply({
     projectName,
     message: userMsg.content,
-    conversationId
+    conversationId,
+    language
   });
 
   const responseMsg = {

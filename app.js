@@ -16,16 +16,36 @@ const chatArea = document.getElementById('chatArea');
 const msgInput = document.getElementById('msgInput');
 const sendBtn = document.getElementById('sendBtn');
 const apiWarning = document.getElementById('apiWarning');
-const attachBtn = document.getElementById('attachBtn');
+const languageSelect = document.getElementById('languageSelect');
+const settingsBtn = document.getElementById('settingsBtn');
+const settingsPanel = document.getElementById('settingsPanel');
+const themeSelect = document.getElementById('themeSelect');
+const autoSpeak = document.getElementById('autoSpeak');
 const fileInput = document.getElementById('fileInput');
 const micBtn = document.getElementById('micBtn');
+const speakBtn = document.getElementById('speakBtn');
+const voiceStatus = document.getElementById('voiceStatus');
+let lastAssistantText = '';
 
-const projectNames = {
-  IN: 'Inglês',
-  ES: 'Espanhol',
-  NO: 'Norueguês',
-  FR: 'Francês'
-};
+const languageNames = { 'pt-BR': 'português', en: 'inglês', fr: 'francês', es: 'espanhol', no: 'norueguês' };
+
+languageSelect.value = localStorage.getItem('miar-language') || 'pt-BR';
+themeSelect.value = localStorage.getItem('miar-theme') || 'system';
+autoSpeak.checked = localStorage.getItem('miar-auto-speak') === 'true';
+
+function applyTheme(theme) {
+  const dark = theme === 'dark' || (theme === 'system' && window.matchMedia('(prefers-color-scheme: dark)').matches);
+  document.body.classList.toggle('dark-theme', dark);
+}
+
+applyTheme(themeSelect.value);
+settingsBtn.addEventListener('click', () => settingsPanel.classList.toggle('open'));
+themeSelect.addEventListener('change', () => {
+  localStorage.setItem('miar-theme', themeSelect.value);
+  applyTheme(themeSelect.value);
+});
+autoSpeak.addEventListener('change', () => localStorage.setItem('miar-auto-speak', autoSpeak.checked));
+languageSelect.addEventListener('change', () => localStorage.setItem('miar-language', languageSelect.value));
 
 function openDrawer() { overlay.classList.add('open'); drawer.classList.add('open'); }
 function closeDrawer() { overlay.classList.remove('open'); drawer.classList.remove('open'); }
@@ -69,8 +89,7 @@ function renderProjectList() {
   projects.forEach(p => {
     const li = document.createElement('li');
     li.className = p.id === activeProject?.id ? 'active' : '';
-    const displayName = projectNames[p.name] || p.name;
-    li.innerHTML = `<span>${escapeHtml(displayName)}</span><span class="del" data-id="${p.id}">✕</span>`;
+    li.innerHTML = `<span>${escapeHtml(p.name)}</span><span class="del" data-id="${p.id}">✕</span>`;
     li.addEventListener('click', (e) => {
       if (e.target.classList.contains('del')) return;
       selectProject(p);
@@ -182,32 +201,48 @@ msgInput.addEventListener('keydown', (e) => {
 });
 sendBtn.addEventListener('click', sendMessage);
 
-attachBtn.addEventListener('click', () => fileInput.click());
 fileInput.addEventListener('change', () => {
-  const file = fileInput.files?.[0];
+  const file = fileInput.files[0];
   if (!file) return;
-  msgInput.value = `${msgInput.value.trim()} [Anexo: ${file.name}]`.trim();
+  msgInput.value = `${msgInput.value}${msgInput.value ? '\n' : ''}[Anexo: ${file.name}]`;
   msgInput.dispatchEvent(new Event('input'));
+  fileInput.value = '';
   msgInput.focus();
 });
+
+function speak(text) {
+  if (!text || !('speechSynthesis' in window)) return;
+  window.speechSynthesis.cancel();
+  const utterance = new SpeechSynthesisUtterance(text);
+  utterance.lang = languageSelect.value;
+  window.speechSynthesis.speak(utterance);
+}
+
+speakBtn.addEventListener('click', () => speak(lastAssistantText));
 
 const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
 if (SpeechRecognition) {
   const recognition = new SpeechRecognition();
-  recognition.lang = 'pt-BR';
   recognition.interimResults = false;
-  recognition.onstart = () => micBtn.classList.add('listening');
-  recognition.onend = () => micBtn.classList.remove('listening');
-  recognition.onresult = (event) => {
-    const spokenText = event.results[0][0].transcript;
-    msgInput.value = `${msgInput.value.trim()} ${spokenText}`.trim();
+  recognition.continuous = false;
+  micBtn.addEventListener('click', () => {
+    recognition.lang = languageSelect.value;
+    voiceStatus.textContent = 'Ouvindo...';
+    voiceStatus.classList.add('active');
+    recognition.start();
+  });
+  recognition.addEventListener('result', (event) => {
+    msgInput.value = `${msgInput.value}${msgInput.value ? ' ' : ''}${event.results[0][0].transcript}`;
     msgInput.dispatchEvent(new Event('input'));
     msgInput.focus();
-  };
-  micBtn.addEventListener('click', () => recognition.start());
+  });
+  recognition.addEventListener('end', () => voiceStatus.classList.remove('active'));
+  recognition.addEventListener('error', () => voiceStatus.classList.remove('active'));
 } else {
   micBtn.addEventListener('click', () => {
-    alert('O reconhecimento de voz não está disponível neste navegador.');
+    voiceStatus.textContent = 'Microfone não disponível neste navegador.';
+    voiceStatus.classList.add('active');
+    setTimeout(() => voiceStatus.classList.remove('active'), 2500);
   });
 }
 
@@ -228,7 +263,12 @@ async function sendMessage() {
 
   const res = await fetch(`${API}/api/chat`, {
     method: 'POST', headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ conversationId: activeConversation.id, projectName: activeProject.name, message: text }),
+    body: JSON.stringify({
+      conversationId: activeConversation.id,
+      projectName: activeProject.name,
+      message: text,
+      language: languageNames[languageSelect.value]
+    }),
   });
   const data = await res.json();
 
@@ -238,7 +278,9 @@ async function sendMessage() {
     sysDiv.textContent = data.message || 'Erro ao falar com a IA.';
     chatArea.appendChild(sysDiv);
   } else {
+    lastAssistantText = data.message || '';
     await loadMessages();
+    if (autoSpeak.checked) speak(lastAssistantText);
   }
   sendBtn.disabled = false;
   chatArea.scrollTop = chatArea.scrollHeight;
