@@ -11,10 +11,12 @@
     --rosa: #d7266a;
     --rosa-escuro: #8f1d4d;
     --rosa-claro: #fce7f0;
+    --rosa-suave: #f8dfe9;
+    --rosa-fundo: #fff8fb;
     --verde: #2f8f6b;
     --verde-claro: #dff7ee;
     --bg: #fffafc;
-    --bg-2: #f4edf2;
+    --bg-2: #f8f0f4;
     --texto: #2a1d2b;
     --cinza: #6d5b68;
     --branco: #ffffff;
@@ -27,7 +29,7 @@
     margin: 0;
     height: 100%;
     font-family: Inter, -apple-system, Segoe UI, Roboto, sans-serif;
-    background: radial-gradient(circle at top, #fff7fa 0%, var(--bg) 32%, var(--bg-2) 100%);
+    background: linear-gradient(180deg, #fffdfd 0%, var(--rosa-fundo) 100%);
     color: var(--texto);
   }
 
@@ -44,16 +46,16 @@
     align-items: center;
     gap: 12px;
     padding: 14px 18px;
-    background: linear-gradient(135deg, var(--rosa) 0%, var(--rosa-escuro) 100%);
-    color: var(--branco);
-    box-shadow: var(--sombra);
+    background: linear-gradient(135deg, #f9d8e7 0%, #f6c6db 100%);
+    color: var(--rosa-escuro);
+    box-shadow: 0 10px 24px rgba(215, 38, 106, 0.08);
     z-index: 5;
   }
 
   #menuBtn {
-    background: rgba(255,255,255,0.12);
+    background: rgba(215, 38, 106, 0.08);
     border: none;
-    color: white;
+    color: var(--rosa-escuro);
     font-size: 24px;
     cursor: pointer;
     padding: 4px 10px;
@@ -61,20 +63,22 @@
     transition: background 0.2s ease;
   }
 
-  #menuBtn:hover { background: rgba(255,255,255,0.2); }
+  #menuBtn:hover { background: rgba(215, 38, 106, 0.12); }
 
   header h1 {
-    font-size: 18px;
+    font-size: 20px;
     margin: 0;
     flex: 1;
     font-weight: 700;
-    letter-spacing: 0.05em;
+    letter-spacing: 0.12em;
+    text-transform: none;
   }
 
   #activeProjectLabel {
     font-size: 13px;
-    opacity: 0.9;
-    font-weight: 600;
+    opacity: 0.95;
+    font-weight: 700;
+    letter-spacing: 0.04em;
   }
 
   #overlay {
@@ -176,37 +180,60 @@
   }
 
   main {
+    position: relative;
     flex: 1;
     overflow-y: auto;
     padding: 18px 16px 14px;
     display: flex;
     flex-direction: column;
     gap: 10px;
-    background: linear-gradient(180deg, rgba(255,255,255,0.38), rgba(255,255,255,0.1));
+    background: linear-gradient(180deg, rgba(255,255,255,0.25), rgba(255,255,255,0.06));
+  }
+
+  .rose-watermark {
+    position: absolute;
+    inset: 40% auto auto 50%;
+    transform: translate(-50%, -50%);
+    font-size: clamp(140px, 28vw, 320px);
+    color: rgba(215, 38, 106, 0.12);
+    user-select: none;
+    pointer-events: none;
+    line-height: 1;
+    filter: blur(0.5px);
+  }
+
+  .gift-shell {
+    position: relative;
+    z-index: 1;
+    width: min(92vw, 420px);
+    margin: auto auto 0;
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
   }
 
   .welcome-card {
-    background: linear-gradient(135deg, rgba(252, 231, 240, 0.9), rgba(255,255,255,0.9));
-    border: 1px solid rgba(215, 38, 106, 0.08);
-    border-radius: 18px;
-    padding: 18px 18px 14px;
-    box-shadow: 0 12px 28px rgba(163, 88, 123, 0.08);
+    background: rgba(255,255,255,0.9);
+    border: 1px solid rgba(215, 38, 106, 0.12);
+    border-radius: 24px;
+    padding: 22px 20px 18px;
+    box-shadow: 0 18px 40px rgba(152, 84, 114, 0.08);
     color: var(--texto);
-    max-width: 460px;
+    text-align: center;
   }
 
   .welcome-card h2 {
     margin: 0 0 8px;
-    font-size: 24px;
-    line-height: 1.2;
+    font-size: clamp(30px, 4vw, 38px);
+    line-height: 1.1;
     color: var(--rosa-escuro);
   }
 
   .welcome-card p {
     margin: 0;
     color: var(--cinza);
-    line-height: 1.5;
-    font-size: 14px;
+    line-height: 1.6;
+    font-size: 15px;
   }
 
   .msg {
@@ -243,11 +270,10 @@
   }
 
   .empty-state {
-    margin: auto;
     text-align: center;
     color: var(--cinza);
-    padding: 24px;
-    font-size: 15px;
+    padding: 10px 12px 0;
+    font-size: 14px;
   }
 
   footer {
@@ -274,6 +300,30 @@
     line-height: 1.4;
     color: var(--texto);
     box-shadow: inset 0 1px 2px rgba(0,0,0,0.02);
+  }
+
+  .composer-tools {
+    display: flex;
+    gap: 6px;
+    align-items: center;
+  }
+
+  .composer-btn {
+    width: 42px;
+    height: 42px;
+    border: 1px solid rgba(215, 38, 106, 0.16);
+    border-radius: 50%;
+    background: var(--rosa-claro);
+    color: var(--rosa-escuro);
+    font-size: 18px;
+    cursor: pointer;
+    flex-shrink: 0;
+  }
+
+  .composer-btn:hover,
+  .composer-btn.listening {
+    background: var(--rosa-suave);
+    box-shadow: 0 0 0 4px rgba(215, 38, 106, 0.1);
   }
 
   #sendBtn {
@@ -307,23 +357,31 @@
   <header>
     <button id="menuBtn" aria-label="Menu">☰</button>
     <div>
-      <h1>MIAR APPS</h1>
-      <div id="activeProjectLabel">Selecione um projeto</div>
+      <h1>✦</h1>
+      <div id="activeProjectLabel">Minha conversa</div>
     </div>
   </header>
 
   <div id="apiWarning">Sem chave de IA configurada no servidor ainda — projetos e conversas funcionam de verdade, mas a resposta da IA vai retornar aviso até a chave ser configurada.</div>
 
   <main id="chatArea">
-    <div class="welcome-card">
-      <h2>MIAR</h2>
-      <p>Seu espaço para criar projetos, conversar com IA e transformar ideias em algo bonito e memorável.</p>
+    <div class="rose-watermark">✿</div>
+    <div class="gift-shell">
+      <div class="welcome-card">
+        <h2>Para você</h2>
+        <p>Um espaço leve, bonito e íntimo para conversar com alguém especial.</p>
+      </div>
+      <div class="empty-state">Escreva algo abaixo e veja a conversa começar.</div>
     </div>
-    <div class="empty-state">Abra o menu ☰ e escolha um projeto para começar.</div>
   </main>
 
   <footer>
-    <textarea id="msgInput" placeholder="Escreva sua mensagem..." rows="1" disabled></textarea>
+    <div class="composer-tools">
+      <button id="attachBtn" class="composer-btn" type="button" aria-label="Anexar arquivo" title="Anexar arquivo">⌕</button>
+      <input id="fileInput" type="file" hidden />
+      <button id="micBtn" class="composer-btn" type="button" aria-label="Falar por microfone" title="Falar por microfone">●</button>
+    </div>
+    <textarea id="msgInput" placeholder="Escreva sua mensagem..." rows="1"></textarea>
     <button id="sendBtn" disabled>➤</button>
   </footer>
 </div>

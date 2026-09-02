@@ -1,5 +1,84 @@
 {
-  "projects": [],
-  "conversations": [],
+  "projects": [
+    {
+      "id": "project_1788389260431_u2rswk",
+      "name": "MEDICINA",
+      "createdAt": "2026-09-02T22:47:40.431Z"
+    },
+    {
+      "id": "project_1788389271848_lny95s",
+      "name": "PESSOAL",
+      "createdAt": "2026-09-02T22:47:51.848Z"
+    },
+    {
+      "id": "project_1788389293030_208khr",
+      "name": "DIREITO DA MINHA FILHA",
+      "createdAt": "2026-09-02T22:48:13.030Z"
+    },
+    {
+      "id": "project_1788389329055_8uoy2q",
+      "name": "INGLÊS",
+      "createdAt": "2026-09-02T22:48:49.055Z"
+    },
+    {
+      "id": "project_1788389333918_49wl6a",
+      "name": "ESPANHOL",
+      "createdAt": "2026-09-02T22:48:53.918Z"
+    },
+    {
+      "id": "project_1788389339333_9uvw8b",
+      "name": "NORUEGUÊS",
+      "createdAt": "2026-09-02T22:48:59.333Z"
+    },
+    {
+      "id": "project_1788389347740_oigurs",
+      "name": "FRANCÊS",
+      "createdAt": "2026-09-02T22:49:07.740Z"
+    }
+  ],
+  "conversations": [
+    {
+      "id": "conversation_1788389261857_570v6c",
+      "projectId": "project_1788389260431_u2rswk",
+      "title": "Conversa 1",
+      "createdAt": "2026-09-02T22:47:41.857Z"
+    },
+    {
+      "id": "conversation_1788389272655_304t72",
+      "projectId": "project_1788389271848_lny95s",
+      "title": "Conversa 1",
+      "createdAt": "2026-09-02T22:47:52.655Z"
+    },
+    {
+      "id": "conversation_1788389293824_fv36uz",
+      "projectId": "project_1788389293030_208khr",
+      "title": "Conversa 1",
+      "createdAt": "2026-09-02T22:48:13.824Z"
+    },
+    {
+      "id": "conversation_1788389329553_5nft3d",
+      "projectId": "project_1788389329055_8uoy2q",
+      "title": "Conversa 1",
+      "createdAt": "2026-09-02T22:48:49.553Z"
+    },
+    {
+      "id": "conversation_1788389334464_774nzb",
+      "projectId": "project_1788389333918_49wl6a",
+      "title": "Conversa 1",
+      "createdAt": "2026-09-02T22:48:54.464Z"
+    },
+    {
+      "id": "conversation_1788389339860_vasieb",
+      "projectId": "project_1788389339333_9uvw8b",
+      "title": "Conversa 1",
+      "createdAt": "2026-09-02T22:48:59.860Z"
+    },
+    {
+      "id": "conversation_1788389348252_m8g911",
+      "projectId": "project_1788389347740_oigurs",
+      "title": "Conversa 1",
+      "createdAt": "2026-09-02T22:49:08.252Z"
+    }
+  ],
   "messages": []
 }
