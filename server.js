@@ -81,11 +81,22 @@ async function callGemini(prompt, history = []) {
 
   for (const model of models) {
     for (let attempt = 0; attempt < 2; attempt += 1) {
-      const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json', 'x-goog-api-key': key },
-        body: JSON.stringify(body)
-      });
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), 15000);
+      let res;
+      try {
+        res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent`, {
+          method: 'POST',
+          signal: controller.signal,
+          headers: { 'Content-Type': 'application/json', 'x-goog-api-key': key },
+          body: JSON.stringify(body)
+        });
+      } catch (error) {
+        lastError = error.name === 'AbortError' ? 'tempo limite excedido' : error.message;
+        continue;
+      } finally {
+        clearTimeout(timeoutId);
+      }
 
       if (res.ok) {
         const data = await res.json();
