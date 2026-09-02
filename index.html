@@ -1,0 +1,340 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+<title>MIAR APPS</title>
+<link rel="manifest" href="manifest.webmanifest" />
+<meta name="theme-color" content="#c2185b" />
+<style>
+  :root{
+    --rosa: #d7266a;
+    --rosa-escuro: #8f1d4d;
+    --rosa-claro: #fce7f0;
+    --verde: #2f8f6b;
+    --verde-claro: #dff7ee;
+    --bg: #fffafc;
+    --bg-2: #f4edf2;
+    --texto: #2a1d2b;
+    --cinza: #6d5b68;
+    --branco: #ffffff;
+    --sombra: 0 14px 35px rgba(143, 29, 77, 0.12);
+  }
+
+  * { box-sizing: border-box; }
+
+  html, body {
+    margin: 0;
+    height: 100%;
+    font-family: Inter, -apple-system, Segoe UI, Roboto, sans-serif;
+    background: radial-gradient(circle at top, #fff7fa 0%, var(--bg) 32%, var(--bg-2) 100%);
+    color: var(--texto);
+  }
+
+  body { overflow: hidden; }
+
+  #app {
+    display: flex;
+    flex-direction: column;
+    height: 100vh;
+  }
+
+  header {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 14px 18px;
+    background: linear-gradient(135deg, var(--rosa) 0%, var(--rosa-escuro) 100%);
+    color: var(--branco);
+    box-shadow: var(--sombra);
+    z-index: 5;
+  }
+
+  #menuBtn {
+    background: rgba(255,255,255,0.12);
+    border: none;
+    color: white;
+    font-size: 24px;
+    cursor: pointer;
+    padding: 4px 10px;
+    border-radius: 10px;
+    transition: background 0.2s ease;
+  }
+
+  #menuBtn:hover { background: rgba(255,255,255,0.2); }
+
+  header h1 {
+    font-size: 18px;
+    margin: 0;
+    flex: 1;
+    font-weight: 700;
+    letter-spacing: 0.05em;
+  }
+
+  #activeProjectLabel {
+    font-size: 13px;
+    opacity: 0.9;
+    font-weight: 600;
+  }
+
+  #overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(28, 16, 22, 0.35);
+    z-index: 10;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.2s ease;
+  }
+
+  #overlay.open { opacity: 1; pointer-events: auto; }
+
+  #drawer {
+    position: fixed;
+    top: 0;
+    left: 0;
+    bottom: 0;
+    width: 300px;
+    background: rgba(255,255,255,0.96);
+    backdrop-filter: blur(12px);
+    z-index: 11;
+    transform: translateX(-100%);
+    transition: transform 0.25s ease;
+    display: flex;
+    flex-direction: column;
+    box-shadow: 2px 0 18px rgba(0,0,0,.18);
+  }
+
+  #drawer.open { transform: translateX(0); }
+
+  #drawer .drawer-header {
+    padding: 20px 18px;
+    background: linear-gradient(135deg, var(--rosa-claro) 0%, #f9dfe8 100%);
+    border-bottom: 1px solid rgba(18, 18, 18, 0.06);
+  }
+
+  #drawer .drawer-header strong {
+    color: var(--rosa-escuro);
+    font-size: 17px;
+  }
+
+  #projectList {
+    list-style: none;
+    margin: 0;
+    padding: 10px 10px 8px;
+    flex: 1;
+    overflow-y: auto;
+  }
+
+  #projectList li {
+    padding: 12px 14px;
+    border-radius: 12px;
+    cursor: pointer;
+    margin-bottom: 6px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+    color: var(--texto);
+    border: 1px solid transparent;
+    transition: all 0.2s ease;
+  }
+
+  #projectList li:hover {
+    background: var(--rosa-claro);
+    border-color: rgba(215, 38, 106, 0.08);
+  }
+
+  #projectList li.active {
+    background: linear-gradient(135deg, var(--rosa) 0%, var(--rosa-escuro) 100%);
+    color: white;
+    box-shadow: 0 12px 20px rgba(215, 38, 106, 0.24);
+  }
+
+  #projectList li .del {
+    opacity: .7;
+    font-size: 13px;
+    padding: 2px 7px;
+    border-radius: 6px;
+  }
+
+  #projectList li .del:hover {
+    opacity: 1;
+    background: rgba(0,0,0,.10);
+  }
+
+  #newProjectBtn {
+    margin: 10px 12px 14px;
+    padding: 12px;
+    border: 2px dashed var(--verde);
+    background: var(--verde-claro);
+    color: var(--verde);
+    border-radius: 12px;
+    cursor: pointer;
+    font-weight: 700;
+    font-size: 14px;
+  }
+
+  main {
+    flex: 1;
+    overflow-y: auto;
+    padding: 18px 16px 14px;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    background: linear-gradient(180deg, rgba(255,255,255,0.38), rgba(255,255,255,0.1));
+  }
+
+  .welcome-card {
+    background: linear-gradient(135deg, rgba(252, 231, 240, 0.9), rgba(255,255,255,0.9));
+    border: 1px solid rgba(215, 38, 106, 0.08);
+    border-radius: 18px;
+    padding: 18px 18px 14px;
+    box-shadow: 0 12px 28px rgba(163, 88, 123, 0.08);
+    color: var(--texto);
+    max-width: 460px;
+  }
+
+  .welcome-card h2 {
+    margin: 0 0 8px;
+    font-size: 24px;
+    line-height: 1.2;
+    color: var(--rosa-escuro);
+  }
+
+  .welcome-card p {
+    margin: 0;
+    color: var(--cinza);
+    line-height: 1.5;
+    font-size: 14px;
+  }
+
+  .msg {
+    max-width: 78%;
+    padding: 12px 14px;
+    border-radius: 18px;
+    line-height: 1.5;
+    font-size: 14.5px;
+    white-space: pre-wrap;
+    box-shadow: 0 8px 18px rgba(36, 24, 30, 0.04);
+  }
+
+  .msg.user {
+    align-self: flex-end;
+    background: linear-gradient(135deg, var(--rosa) 0%, var(--rosa-escuro) 100%);
+    color: white;
+    border-bottom-right-radius: 6px;
+  }
+
+  .msg.assistant {
+    align-self: flex-start;
+    background: linear-gradient(135deg, var(--verde-claro) 0%, #edf9f3 100%);
+    color: #1d3d31;
+    border-bottom-left-radius: 6px;
+  }
+
+  .msg.system {
+    align-self: center;
+    background: #fff4cb;
+    color: #5e4a00;
+    font-size: 13px;
+    padding: 8px 12px;
+    border-radius: 12px;
+  }
+
+  .empty-state {
+    margin: auto;
+    text-align: center;
+    color: var(--cinza);
+    padding: 24px;
+    font-size: 15px;
+  }
+
+  footer {
+    padding: 12px 16px 16px;
+    background: rgba(255,255,255,0.82);
+    backdrop-filter: blur(12px);
+    border-top: 1px solid rgba(18, 18, 18, 0.06);
+    display: flex;
+    gap: 10px;
+    align-items: flex-end;
+  }
+
+  #msgInput {
+    flex: 1;
+    resize: none;
+    border: 1px solid rgba(125, 118, 122, 0.2);
+    background: white;
+    border-radius: 16px;
+    padding: 12px 14px;
+    font-size: 14.5px;
+    font-family: inherit;
+    max-height: 140px;
+    min-height: 48px;
+    line-height: 1.4;
+    color: var(--texto);
+    box-shadow: inset 0 1px 2px rgba(0,0,0,0.02);
+  }
+
+  #sendBtn {
+    background: linear-gradient(135deg, var(--rosa) 0%, var(--rosa-escuro) 100%);
+    color: white;
+    border: none;
+    border-radius: 50%;
+    width: 46px;
+    height: 46px;
+    font-size: 18px;
+    cursor: pointer;
+    flex-shrink: 0;
+    box-shadow: 0 12px 20px rgba(215, 38, 106, 0.22);
+  }
+
+  #sendBtn:disabled { opacity: 0.42; cursor: not-allowed; }
+
+  #apiWarning {
+    background: #fff3cd;
+    color: #7a5c00;
+    font-size: 12.5px;
+    padding: 6px 16px;
+    text-align: center;
+    display: none;
+    border-bottom: 1px solid rgba(122, 92, 0, 0.15);
+  }
+</style>
+</head>
+<body>
+<div id="app">
+  <header>
+    <button id="menuBtn" aria-label="Menu">☰</button>
+    <div>
+      <h1>MIAR APPS</h1>
+      <div id="activeProjectLabel">Selecione um projeto</div>
+    </div>
+  </header>
+
+  <div id="apiWarning">Sem chave de IA configurada no servidor ainda — projetos e conversas funcionam de verdade, mas a resposta da IA vai retornar aviso até a chave ser configurada.</div>
+
+  <main id="chatArea">
+    <div class="welcome-card">
+      <h2>MIAR</h2>
+      <p>Seu espaço para criar projetos, conversar com IA e transformar ideias em algo bonito e memorável.</p>
+    </div>
+    <div class="empty-state">Abra o menu ☰ e escolha um projeto para começar.</div>
+  </main>
+
+  <footer>
+    <textarea id="msgInput" placeholder="Escreva sua mensagem..." rows="1" disabled></textarea>
+    <button id="sendBtn" disabled>➤</button>
+  </footer>
+</div>
+
+<div id="overlay"></div>
+<div id="drawer">
+  <div class="drawer-header"><strong>Projetos</strong></div>
+  <ul id="projectList"></ul>
+  <button id="newProjectBtn">+ Novo projeto</button>
+</div>
+
+<script src="app.js"></script>
+</body>
+</html>
