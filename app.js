@@ -5,6 +5,7 @@ const API = '';
 let projects = [];
 let activeProject = null;
 let activeConversation = null;
+const messageCache = new Map();
 
 const menuBtn = document.getElementById('menuBtn');
 const overlay = document.getElementById('overlay');
@@ -181,9 +182,23 @@ async function selectProject(project) {
 
 async function loadMessages() {
   if (!activeConversation) return;
-  const res = await fetch(`${API}/api/conversations/${activeConversation.id}/messages`);
-  const messages = await res.json();
-  renderChat(messages);
+  const conversationId = activeConversation.id;
+  const cachedMessages = messageCache.get(conversationId);
+  if (cachedMessages) renderChat(cachedMessages);
+
+  try {
+    const res = await fetch(`${API}/api/conversations/${conversationId}/messages`);
+    if (!res.ok) throw new Error('Falha ao carregar mensagens');
+    const messages = await res.json();
+    messageCache.set(conversationId, messages);
+    if (activeConversation?.id === conversationId) renderChat(messages);
+  } catch (error) {
+    if (!cachedMessages) {
+      const currentMessages = messageCache.get(conversationId) || [];
+      renderChat(currentMessages);
+    }
+    console.warn('Não foi possível atualizar a conversa:', error);
+  }
 }
 
 function renderChat(messages) {
