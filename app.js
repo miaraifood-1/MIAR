@@ -64,6 +64,22 @@ function closeDrawer() { overlay.classList.remove('open'); drawer.classList.remo
 menuBtn.addEventListener('click', openDrawer);
 overlay.addEventListener('click', closeDrawer);
 
+document.addEventListener('click', (event) => {
+  if (!settingsPanel.contains(event.target) && event.target !== settingsBtn) {
+    settingsPanel.classList.remove('open');
+  }
+  if (!audioRecorder.contains(event.target) && event.target !== micBtn) {
+    audioRecorder.classList.remove('open');
+  }
+});
+
+document.addEventListener('keydown', (event) => {
+  if (event.key !== 'Escape') return;
+  closeDrawer();
+  settingsPanel.classList.remove('open');
+  audioRecorder.classList.remove('open');
+});
+
 async function checkHealth() {
   const res = await fetch(`${API}/api/health`);
   const data = await res.json();
@@ -106,6 +122,8 @@ function renderProjectList() {
       if (e.target.classList.contains('del')) return;
       selectProject(p);
       closeDrawer();
+      settingsPanel.classList.remove('open');
+      audioRecorder.classList.remove('open');
     });
     li.querySelector('.del').addEventListener('click', async (e) => {
       e.stopPropagation();
@@ -128,6 +146,8 @@ newProjectBtn.addEventListener('click', async () => {
   await loadProjects();
   selectProject(project);
   closeDrawer();
+  settingsPanel.classList.remove('open');
+  audioRecorder.classList.remove('open');
 });
 
 async function selectProject(project) {
