@@ -73,7 +73,8 @@ async function callGemini(prompt, history = []) {
     generationConfig: { temperature: 0.7 }
   };
 
-  const res = await fetch('https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent', {
+  const model = process.env.GEMINI_MODEL || 'gemini-3.6-flash';
+  const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json', 'x-goog-api-key': key },
     body: JSON.stringify(body)
