@@ -58,7 +58,11 @@ function buildHistoryMessages(conversationId) {
 }
 
 async function callGemini(prompt, history = []) {
-  const key = process.env.GEMINI_API_KEY;
+  const key = String(process.env.GEMINI_API_KEY || '')
+    .trim()
+    .replace(/^['"]|['"]$/g, '')
+    .replace(/^Bearer\s+/i, '')
+    .replace(/^GEMINI_API_KEY\s*=\s*/i, '');
   if (!key) return null;
 
   const body = {
@@ -69,9 +73,9 @@ async function callGemini(prompt, history = []) {
     generationConfig: { temperature: 0.7 }
   };
 
-  const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${key}`, {
+  const res = await fetch('https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent', {
     method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
+    headers: { 'Content-Type': 'application/json', 'x-goog-api-key': key },
     body: JSON.stringify(body)
   });
 
