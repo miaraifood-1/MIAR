@@ -34,6 +34,16 @@
       "id": "project_1788389347740_oigurs",
       "name": "FRANCÊS",
       "createdAt": "2026-09-02T22:49:07.740Z"
+    },
+    {
+      "id": "project_1788390285629_0m1lx4",
+      "name": "AULAS",
+      "createdAt": "2026-09-02T23:04:45.629Z"
+    },
+    {
+      "id": "project_1788390285629_k21988",
+      "name": "PORTUGUÊS",
+      "createdAt": "2026-09-02T23:04:45.629Z"
     }
   ],
   "conversations": [
@@ -78,6 +88,18 @@
       "projectId": "project_1788389347740_oigurs",
       "title": "Conversa 1",
       "createdAt": "2026-09-02T22:49:08.252Z"
+    },
+    {
+      "id": "conversation_1788390285629_ivn159",
+      "projectId": "project_1788390285629_0m1lx4",
+      "title": "Conversa 1",
+      "createdAt": "2026-09-02T23:04:45.629Z"
+    },
+    {
+      "id": "conversation_1788390285629_4sf1gl",
+      "projectId": "project_1788390285629_k21988",
+      "title": "Conversa 1",
+      "createdAt": "2026-09-02T23:04:45.629Z"
     }
   ],
   "messages": []
