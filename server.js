@@ -73,20 +73,32 @@ async function callGemini(prompt, history = []) {
     generationConfig: { temperature: 0.7 }
   };
 
-  const model = process.env.GEMINI_MODEL || 'gemini-3.6-flash';
-  const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent`, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json', 'x-goog-api-key': key },
-    body: JSON.stringify(body)
-  });
+  const models = [
+    process.env.GEMINI_MODEL || 'gemini-3.6-flash',
+    process.env.GEMINI_FALLBACK_MODEL
+  ].filter((model, index, list) => model && list.indexOf(model) === index);
+  let lastError = '';
 
-  if (!res.ok) {
-    const text = await res.text();
-    throw new Error(`Gemini error: ${text}`);
+  for (const model of models) {
+    for (let attempt = 0; attempt < 2; attempt += 1) {
+      const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'x-goog-api-key': key },
+        body: JSON.stringify(body)
+      });
+
+      if (res.ok) {
+        const data = await res.json();
+        return data?.candidates?.[0]?.content?.parts?.map((p) => p.text).join('') || 'Sem resposta da IA.';
+      }
+
+      lastError = await res.text();
+      if (![429, 500, 503].includes(res.status)) break;
+      await new Promise((resolve) => setTimeout(resolve, 800 * (attempt + 1)));
+    }
   }
 
-  const data = await res.json();
-  return data?.candidates?.[0]?.content?.parts?.map((p) => p.text).join('') || 'Sem resposta da IA.';
+  throw new Error(`Gemini temporariamente indisponível: ${lastError}`);
 }
 
 async function callOpenRouter(prompt, history = []) {
@@ -230,6 +242,9 @@ async function generateAssistantReply({ projectName, message, conversationId, la
         return (await callGemini(prompt, history)) || 'IA não configurada.';
     }
   } catch (error) {
+    if (error.message.includes('temporariamente indisponível')) {
+      return 'A IA está recebendo muitas solicitações neste momento. Tente enviar novamente em alguns segundos.';
+    }
     return `Erro ao chamar a IA: ${error.message}`;
   }
 }
