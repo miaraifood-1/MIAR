@@ -343,31 +343,52 @@ async function sendMessage() {
   userDiv.textContent = text;
   document.querySelector('.empty-state')?.remove();
   chatArea.appendChild(userDiv);
+  const typingDiv = document.createElement('div');
+  typingDiv.className = 'typing';
+  typingDiv.textContent = 'Aguarde, estou respondendo';
+  chatArea.appendChild(typingDiv);
   chatArea.scrollTop = chatArea.scrollHeight;
 
-  const res = await fetch(`${API}/api/chat`, {
-    method: 'POST', headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({
-      conversationId: activeConversation.id,
-      projectName: activeProject.name,
-      message: text,
-      language: languageNames[languageSelect.value]
-    }),
-  });
-  const data = await res.json();
+  try {
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 45000);
+    const res = await fetch(`${API}/api/chat`, {
+      method: 'POST',
+      signal: controller.signal,
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        conversationId: activeConversation.id,
+        projectName: activeProject.name,
+        message: text,
+        language: languageNames[languageSelect.value]
+      }),
+    });
+    clearTimeout(timeoutId);
+    const data = await res.json();
+    typingDiv.remove();
 
-  if (!res.ok) {
+    if (!res.ok) {
+      const sysDiv = document.createElement('div');
+      sysDiv.className = 'msg system';
+      sysDiv.textContent = data.message || 'Erro ao falar com a IA.';
+      chatArea.appendChild(sysDiv);
+    } else {
+      lastAssistantText = data.message || '';
+      await loadMessages();
+      if (autoSpeak.checked) speak(lastAssistantText);
+    }
+  } catch (error) {
+    typingDiv.remove();
     const sysDiv = document.createElement('div');
     sysDiv.className = 'msg system';
-    sysDiv.textContent = data.message || 'Erro ao falar com a IA.';
+    sysDiv.textContent = error.name === 'AbortError'
+      ? 'A IA demorou mais de 45 segundos. Tente novamente.'
+      : 'Não foi possível conectar à IA. Tente novamente.';
     chatArea.appendChild(sysDiv);
-  } else {
-    lastAssistantText = data.message || '';
-    await loadMessages();
-    if (autoSpeak.checked) speak(lastAssistantText);
+  } finally {
+    sendBtn.disabled = false;
+    chatArea.scrollTop = chatArea.scrollHeight;
   }
-  sendBtn.disabled = false;
-  chatArea.scrollTop = chatArea.scrollHeight;
 }
 
 checkHealth();
